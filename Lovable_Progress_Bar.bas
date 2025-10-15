@@ -1,7 +1,30 @@
 Attribute VB_Name = "Lovable_Progress_Bar"
 Sub Lovable_Progress_Bar()
     On Error Resume Next
-
+    
+    Dim pres As Presentation
+    Set pres = ActivePresentation
+    
+    ' === ASK USER: DELETE ONLY OR REBUILD ===
+    Dim answer As VbMsgBoxResult
+    answer = MsgBox("Do you want to ""Delete & Rebuild"" or ""Delete Only""?" & vbCrLf & _
+                    "Yes, Delete and rebuild progress bar" & vbCrLf & _
+                    "No, Delete only", _
+                    vbYesNo + vbQuestion, "Progress Bar Action")
+    
+    ' --- DELETE ALL PREVIOUS PROGRESS BAR SHAPES ---
+    Dim sl As Slide, shpIndex As Integer
+    For Each sl In pres.Slides
+        For shpIndex = sl.Shapes.Count To 1 Step -1
+            If InStr(sl.Shapes(shpIndex).Name, "LPB") > 0 Then
+                sl.Shapes(shpIndex).Delete
+            End If
+        Next shpIndex
+    Next sl
+    
+    ' If user chose Delete only, exit here
+    If answer = vbNo Then Exit Sub
+    
     ' === DEFAULT CONFIGURATION ===
     Dim startOffset As Integer: startOffset = 1       ' Number of slides to skip at start
     Dim endOffset As Integer: endOffset = 1           ' Number of slides to skip at end
@@ -21,10 +44,9 @@ Sub Lovable_Progress_Bar()
     
     ' === CONFIRMATION DIALOG FOR DEFAULTS ===
     Dim useDialog As Boolean
-    Dim answer As VbMsgBoxResult
     answer = MsgBox("Do you want to use default values?" & vbCrLf & _
-                    "Yes ? use defaults" & vbCrLf & _
-                    "No ? enter custom values", _
+                    "Yes, use defaults" & vbCrLf & _
+                    "No, enter custom values", _
                     vbYesNo + vbQuestion, "Progress Bar Settings")
     If answer = vbNo Then useDialog = True Else useDialog = False
     
@@ -114,23 +136,10 @@ Sub Lovable_Progress_Bar()
         End If
     End If
     
-    ' === SETUP PRESENTATION ===
-    Dim pres As Presentation
-    Set pres = ActivePresentation
+    ' --- CALCULATE SLIDE RANGE BASED ON OFFSETS ---
     Dim totalSlides As Integer
     totalSlides = pres.Slides.Count
     
-    ' --- DELETE ALL PREVIOUS PROGRESS BAR SHAPES ---
-    Dim sl As Slide, shpIndex As Integer
-    For Each sl In pres.Slides
-        For shpIndex = sl.Shapes.Count To 1 Step -1
-            If InStr(sl.Shapes(shpIndex).Name, "LPB") > 0 Then
-                sl.Shapes(shpIndex).Delete
-            End If
-        Next shpIndex
-    Next sl
-    
-    ' --- CALCULATE SLIDE RANGE BASED ON OFFSETS ---
     Dim slideStart As Integer, slideEnd As Integer
     slideStart = 1 + startOffset
     slideEnd = totalSlides - endOffset
@@ -193,3 +202,5 @@ Sub Lovable_Progress_Bar()
         Next X
     End If
 End Sub
+
+
